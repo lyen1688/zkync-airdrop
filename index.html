@@ -62,7 +62,7 @@
     <div class="container">
         <h1>zkSync空投批量查询</h1>
         <div class="info">
-            <p>接口繁忙时可以手动查询：<a href="" target="_blank">https://claim.zknation.io/&nbsp;<i class="bi bi-box-arrow-up-right"></i></a></p>
+            <p>接口繁忙时可以手动查询：<a href="https://claim.zknation.io" target="_blank">https://claim.zknation.io/&nbsp;<i class="bi bi-box-arrow-up-right"></i></a></p>
             <p>采用本地数据离线查询：eligibility_list.csv，查询不会提交到官方,不会被女巫！</p>
             <p><a href="https://ybot.io" target="_blank">Runes符文批量铸造：ybot.io&nbsp;<i class="bi bi-box-arrow-up-right"></i></a>（全网铸造成本最低，支持无限加速！）</p>
         </div>
@@ -158,8 +158,11 @@
             });
 
             const newTotalBalance = totalBalance + batchTotal;
-            document.getElementById('total-summary').textContent = `中奖数量：${winningCount} 未中奖数量：${losingCount} 空投累计: ${newTotalBalance} $ZK`;
-
+            document.getElementById('total-summary').innerHTML = `
+                中奖数量：<span style="color: green;">${winningCount}</span> 
+                未中奖数量：<span style="color: red;">${losingCount}</span> 
+                空投累计: <span style="color: green;">${newTotalBalance}</span> $ZK
+            `;
             // 在处理完所有地址后添加导出按钮
             if (endIndex >= addresses.length) {
                 addExportButton();
