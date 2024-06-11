@@ -133,7 +133,7 @@
         }
 
         async function processBatch(addresses, startIndex, totalBalance) {
-            const batchSize = 50; // 每轮最多50个地址
+            const batchSize = 5; // 每轮最多50个地址
             const endIndex = Math.min(startIndex + batchSize, addresses.length);
             const batch = addresses.slice(startIndex, endIndex);
 
@@ -177,7 +177,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ walletaddresses: [address] })
+                    body: JSON.stringify({ walletaddresses: [address.toLowerCase()] })
                 });
 
                 if (!response.ok) throw new Error('Network response was not ok');
