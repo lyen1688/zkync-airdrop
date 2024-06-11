@@ -126,7 +126,7 @@
         });
 
         async function processBatch(addresses, startIndex, totalBalance) {
-            const batchSize = 30; // 每轮最多5个地址
+            const batchSize = 50; // 每轮最多5个地址
             const endIndex = Math.min(startIndex + batchSize, addresses.length);
             const batch = addresses.slice(startIndex, endIndex);
 
