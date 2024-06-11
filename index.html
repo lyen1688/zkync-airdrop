@@ -122,10 +122,10 @@
             resultTable.appendChild(document.createElement('tbody'));
             resultDiv.appendChild(resultTable);
 
-            processBatch(addresses, 0, 0);
+            processBatch(addresses, 0, 0, 0, 0);
         });
 
-        async function processBatch(addresses, startIndex, totalBalance) {
+        async function processBatch(addresses, startIndex, totalBalance, winningCount, losingCount) {
             const batchSize = 50; // 每轮最多5个地址
             const endIndex = Math.min(startIndex + batchSize, addresses.length);
             const batch = addresses.slice(startIndex, endIndex);
@@ -150,16 +150,21 @@
                 const balance = jsonResponse.results[address] ? jsonResponse.results[address].tokenAmount : 0;
                 document.getElementById('merl-' + (startIndex + index)).textContent = balance + ' $ZK';
                 batchTotal += isNaN(balance) ? 0 : parseFloat(balance);
+                if (balance > 0) {
+                    winningCount++;
+                } else {
+                    losingCount++;
+                }
             });
 
             const newTotalBalance = totalBalance + batchTotal;
-            document.getElementById('total-summary').textContent = '空投累计: ' + newTotalBalance + ' $ZK';
+            document.getElementById('total-summary').textContent = `中奖数量：${winningCount} 未中奖数量：${losingCount} 空投累计: ${newTotalBalance} $ZK`;
 
             // 在处理完所有地址后添加导出按钮
             if (endIndex >= addresses.length) {
                 addExportButton();
             } else {
-                processBatch(addresses, endIndex, newTotalBalance);
+                processBatch(addresses, endIndex, newTotalBalance, winningCount, losingCount);
             }
         }
 
