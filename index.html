@@ -88,7 +88,7 @@
         const resultDiv = document.getElementById('result');
     
         queryBtn.addEventListener('click', async function() {
-            let addresses = addressInput.value.split('\n').filter(address => address.trim() !== '');
+            let addresses = addressInput.value.split('\n').filter(address => address.trim().toLowerCase() !== '');
             addresses = await convertAddresses(addresses);
 
             // 清空上一次的结果
@@ -133,11 +133,11 @@
         }
 
         async function processBatch(addresses, startIndex, totalBalance) {
-            const batchSize = 5; // 每轮最多50个地址
+            const batchSize = 50; // 每轮最多50个地址
             const endIndex = Math.min(startIndex + batchSize, addresses.length);
             const batch = addresses.slice(startIndex, endIndex);
 
-            const batchPromises = batch.map((address, index) => updateBalance(address, startIndex + index));
+            const batchPromises = batch.map((address, index) => updateBalance(address.toLowerCase(), startIndex + index));
             const batchResults = await Promise.all(batchPromises);
 
             const batchTotal = batchResults.reduce((acc, curr) => acc + (isNaN(curr) ? 0 : curr), 0);
