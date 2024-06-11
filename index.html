@@ -89,7 +89,7 @@
     
         queryBtn.addEventListener('click', async function() {
             let addresses = addressInput.value.split('\n').filter(address => address.trim().toLowerCase() !== '');
-            addresses = await convertAddresses(addresses);
+            addresses = addresses.map(address => address.toLowerCase());
 
             // 清空上一次的结果
             resultDiv.innerHTML = '';
@@ -125,22 +125,33 @@
             processBatch(addresses, 0, 0);
         });
 
-        async function convertAddresses(inputAddresses) {
-            const conversions = inputAddresses.map(async (address) => {
-                return address;
-            });
-            return Promise.all(conversions);
-        }
-
         async function processBatch(addresses, startIndex, totalBalance) {
-            const batchSize = 50; // 每轮最多50个地址
+            const batchSize = 30; // 每轮最多5个地址
             const endIndex = Math.min(startIndex + batchSize, addresses.length);
             const batch = addresses.slice(startIndex, endIndex);
 
-            const batchPromises = batch.map((address, index) => updateBalance(address.toLowerCase(), startIndex + index));
-            const batchResults = await Promise.all(batchPromises);
+            const response = await fetch('https://zksync-wldbwgjime.ap-southeast-1.fcapp.run/getzksync', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ walletaddresses: batch })
+            });
 
-            const batchTotal = batchResults.reduce((acc, curr) => acc + (isNaN(curr) ? 0 : curr), 0);
+            if (!response.ok) {
+                console.error('Network response was not ok');
+                return;
+            }
+
+            const jsonResponse = await response.json();
+            let batchTotal = 0;
+
+            batch.forEach((address, index) => {
+                const balance = jsonResponse.results[address] ? jsonResponse.results[address].tokenAmount : 0;
+                document.getElementById('merl-' + (startIndex + index)).textContent = balance + ' $ZK';
+                batchTotal += isNaN(balance) ? 0 : parseFloat(balance);
+            });
+
             const newTotalBalance = totalBalance + batchTotal;
             document.getElementById('total-summary').textContent = '空投累计: ' + newTotalBalance + ' $ZK';
 
@@ -161,34 +172,6 @@
                 exportBtn.textContent = '导出表格';
                 exportBtn.addEventListener('click', exportToCSV);
                 document.getElementById('total-summary-container').appendChild(exportBtn);
-            }
-        }
-
-        async function updateBalance(address, index) {
-            let response = await getBalance(address);
-            document.getElementById('merl-' + index).textContent = response.merl !== '接口繁忙' ? response.merl + ' $ZK' : '接口繁忙';
-            return isNaN(response.merl) ? 0 : parseFloat(response.merl);
-        }
-    
-        async function getBalance(address) {
-            try {
-                const response = await fetch('https://zksync-wldbwgjime.ap-southeast-1.fcapp.run/getzksync', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ walletaddresses: [address.toLowerCase()] })
-                });
-
-                if (!response.ok) throw new Error('Network response was not ok');
-
-                const jsonResponse = await response.json();
-                const balance = jsonResponse.results[address] ? jsonResponse.results[address].tokenAmount : 0;
-
-                return { merl: balance };
-            } catch (error) {
-                console.error('Failed to fetch balance for', address, error);
-                return { merl: '接口繁忙' };
             }
         }
 
